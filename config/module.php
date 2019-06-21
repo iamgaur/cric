@@ -7,5 +7,6 @@ return [
         'Login',
         'Dashboard',
         'Country',
+        'Team',
     ]
 ];

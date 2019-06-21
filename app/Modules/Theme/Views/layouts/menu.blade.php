@@ -9,13 +9,13 @@
 			<p>Dashboard</p>
 		</a>
 	</li>
-	<li class="{{ ($currentRouteName == 'country') ? 'active' : ''}}">
+	<li class="{{ ($currentRouteName == 'countries') ? 'active' : ''}}">
 		<a href="{{ route('countries') }}">
 			<p>Country</p>
 		</a>
 	</li>
-	<li class="{{ ($currentRouteName == 'team') ? 'active' : ''}}">
-		<a href="#">
+	<li class="{{ ($currentRouteName == 'teams') ? 'active' : ''}}">
+		<a href="{{ route('teams') }}">
 			<p>Team</p>
 		</a>
 	</li>

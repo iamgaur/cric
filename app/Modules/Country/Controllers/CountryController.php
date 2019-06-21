@@ -23,7 +23,7 @@ class CountryController extends Controller {
      */
     public function index() {
 
-        $fetchCountry = \App\Modules\Country\Models\Country::get()->map(function($item) {
+        $fetchCountry = Country::get()->map(function($item) {
             return collect($item)->only(['id', 'name'])->all();
         });
         return view('Country::index', compact('fetchCountry'));
