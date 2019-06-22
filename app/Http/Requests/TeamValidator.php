@@ -21,9 +21,9 @@ class TeamValidator extends FormRequest
      * @return array
      */
     public function rules() {
-        $id = request()->route('id');
-        $name_rule = (!empty($id)) ?
-                'required|unique_space_check:team,'. $id. '|max:255' : 'required|unique_space_check:team|max:255';
+        $slug = request()->route('slug');
+        $name_rule = (!empty($slug)) ?
+                'required|unique_space_check:team,'. $slug. '|max:255' : 'required|unique_space_check:team|max:255';
         return [
             'name' => $name_rule,
             'short_name' => 'required'

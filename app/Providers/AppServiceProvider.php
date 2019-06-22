@@ -37,12 +37,12 @@ class AppServiceProvider extends ServiceProvider
     public function validateUniqueSpaceCheck() {
 
         Validator::extend('unique_space_check', function($attribute, $value, $parameters) {
-            $id = (isset($parameters[1])) ? $parameters[1] : null;
+            $slug = (isset($parameters[1])) ? $parameters[1] : null;
 
             $value = trim(preg_replace('/\s\s+/', ' ', $value));
 
-            if ($id) {
-                $check = DB::table($parameters[0])->where($attribute, $value)->where('id', '<>', $id)->count();
+            if ($slug) {
+                $check = DB::table($parameters[0])->where($attribute, $value)->where('slug', '<>', $slug)->count();
             } else {
                 $check = DB::table($parameters[0])->where($attribute, $value)->count();
             }

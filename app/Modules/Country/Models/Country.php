@@ -8,5 +8,5 @@ class Country extends Model {
    public $table = 'country';
    public $primaryKey = 'id';
 
-   protected $fillable = ['name', 'meta_title', 'meta_description', 'meta_keywords'];
+   protected $fillable = ['name', 'slug', 'meta_title', 'meta_description', 'meta_keywords'];
 }

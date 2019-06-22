@@ -27,7 +27,8 @@
                                               <td>{{ $value['short_name'] }}</td>
                                               <td>{{ $value['country']['name'] }}</td>
                                               <td>{{ config('constants.team_type.' . $value['team_type']) }}</td>
-                                              <td><a href="edit_team.php?edit_id=' . $value['id'] . '">edit</a> | delete</td>
+                                              <td><a href="{{ route('editTeam', ['slug' => $value['slug']]) }}">edit</a> |
+                                                  <a href="{{ route('deleteTeam', ['slug' => $value['slug']]) }}" onclick="if (!confirm('are you sure want to delete team?')) return false;" >delete</a></td>
                                             </tr>
                                         @endforeach
                                     </tbody>

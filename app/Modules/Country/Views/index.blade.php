@@ -20,8 +20,8 @@
                                             <tr>
                                                 <td>{{ $value['id'] }}</td>
                                                 <td>{{ $value['name'] }}</td>
-                                                <td><a href="{{ route('editCountry', ['name' => $value['name'], 'id' => $value['id']]) }}">edit</a> |
-                                                    <a href="{{ route('deleteCountry', ['id' => $value['id']]) }}" onclick="if (!confirm('are you sure want to delete country?')) return false;" >delete</a></td>
+                                                <td><a href="{{ route('editCountry', ['slug' => $value['slug']]) }}">edit</a> |
+                                                    <a href="{{ route('deleteCountry', ['slug' => $value['slug']]) }}" onclick="if (!confirm('are you sure want to delete country?')) return false;" >delete</a></td>
                                             </tr>
                                         @endforeach
                                     </tbody>

@@ -32,9 +32,9 @@
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label>Country</label>
-                                            <select class="form-control" name="team_country" id="team_country">
+                                            <select class="form-control" name="country_id" id="team_country">
                                                 @foreach ($countries as $country_id => $name)
-                                                   <option {{ old('team_country', $team->short_name) == $country_id ? 'selected' : null }} value="{{ $country_id }}">{{ $name }}</option>
+                                                   <option {{ old('country_id', $team->country_id) == $country_id ? 'selected' : null }} value="{{ $country_id }}">{{ $name }}</option>
                                                 @endforeach
                                             </select>
                                         </div>

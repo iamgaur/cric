@@ -9,7 +9,7 @@ class Teams extends Model {
    public $table = 'team';
    public $primaryKey = 'id';
 
-   protected $fillable = ['name', 'short_name', 'country_id', 'team_type', 'meta_title', 'meta_description', 'meta_keywords'];
+   protected $fillable = ['name', 'short_name', 'country_id', 'slug', 'team_type', 'meta_title', 'meta_description', 'meta_keywords'];
    
    
    public function Country () {

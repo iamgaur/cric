@@ -22,9 +22,9 @@ class CountryValidator extends FormRequest
      * @return array
      */
     public function rules() {
-        $id = request()->route('id');
-        $name_rule = (!empty($id)) ?
-                'required|unique_space_check:country,'. $id. '|max:255' : 'required|unique_space_check:country|max:255';
+        $slug = request()->route('slug');
+        $name_rule = (!empty($slug)) ?
+                'required|unique_space_check:country,'. $slug. '|max:255' : 'required|unique_space_check:country|max:255';
         return [
             'name' => $name_rule,
             'meta_title' => 'required'

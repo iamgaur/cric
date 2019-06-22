@@ -24,7 +24,7 @@ class CountryController extends Controller {
     public function index() {
 
         $fetchCountry = Country::get()->map(function($item) {
-            return collect($item)->only(['id', 'name'])->all();
+            return collect($item)->only(['id', 'name', 'slug'])->all();
         });
         return view('Country::index', compact('fetchCountry'));
     }
@@ -47,13 +47,13 @@ class CountryController extends Controller {
      * @description: edit existing Country.
      * @return Illuminate\View\View;
      */
-    public function edit($name, $id) {
+    public function edit($slug) {
 
-        $country = Country::find($id);
+        $country = Country::whereSlug($slug)->first();
         if (!$country) {
             return abort(404);
         }
-        $title = __('Edit Country: ' . $name);
+        $title = __('Edit Country: ' . $country->name);
         return view('Country::add', compact('country', 'title'));
     }
 
@@ -66,11 +66,13 @@ class CountryController extends Controller {
     public function save(CountryValidator $request) {
         try {
             DB::beginTransaction();
-            if ($id = $request->route('id')) {
-                $country = Country::find($id);
-                $country->fill(array_map('trim', $request->all()));
+            if ($slug = $request->route('slug')) {
+                $country = Country::whereSlug($slug)->first();
+                $country->fill(array_map('trim', $request->except(['slug'])));
             } else {
-                $country = new Country(array_map('trim', $request->all()));
+                $insertValues = array_map('trim', $request->except(['slug']));
+                $insertValues['slug'] = createSlug($insertValues['name']);
+                $country = new Country($insertValues);
             }
             if ($country->save()) {
                 DB::commit();
@@ -87,19 +89,19 @@ class CountryController extends Controller {
     /**
      * function delete().
      *
-     * @param int $id
+     * @param int $slug
      * @return Illuminate\View\View;
      */
-    public function delete($id) {
+    public function delete($slug) {
         try {
             DB::beginTransaction();
-            $country = Country::find($id);
+            $country = Country::whereSlug($slug)->first();
             if (!$country) {
                 return redirect()->back()->withErrors(['message' => __('Country does not exist on our records')]);
             }
             if ($country->delete()) {
                 DB::commit();
-                return redirect()->back()->with(['success' => __('Saved successfully')]);
+                return redirect()->back()->with(['success' => __('Deleted successfully')]);
             }
         } catch (\Exception $ex) {
             DB::rollBack();
