@@ -45,7 +45,7 @@
 		</a>
 	</li>
 	<li class="{{ ($currentRouteName == 'news') ? 'active' : ''}}">
-		<a href="#">
+		<a href="{{ route('news') }}">
 			<p>News</p>
 		</a>
 	</li>

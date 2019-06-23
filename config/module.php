@@ -10,6 +10,7 @@ return [
         'Team',
         'Series',
         'Match',
-        'MatchTeams'
+        'MatchTeams',
+        'News'
     ]
 ];
