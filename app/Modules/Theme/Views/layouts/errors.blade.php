@@ -10,5 +10,5 @@
            <strong>{{ $errors->first($key) }}</strong>
         </div>
         @break
-    @endforeach    
+    @endforeach
 @endif

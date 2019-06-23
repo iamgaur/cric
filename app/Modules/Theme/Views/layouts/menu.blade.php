@@ -20,7 +20,7 @@
 		</a>
 	</li>
 	<li class="{{ ($currentRouteName == 'series') ? 'active' : ''}}">
-		<a href="#">
+		<a href="{{ route('series') }}">
 			<p>Series</p>
 		</a>
 	</li>

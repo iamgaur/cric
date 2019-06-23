@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Modules\Team\Controllers;
+namespace App\Modules\Series\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Team\Models\Teams;
-use App\Modules\Country\Models\Country;
-use App\Http\Requests\TeamValidator;
+use App\Modules\Series\Models\Series;
+use App\Http\Requests\SeriesValidator;
 use DB;
 use Log;
 
-class TeamController extends Controller {
+class SeriesController extends Controller {
 
     public function __construct() {
         
@@ -19,11 +18,11 @@ class TeamController extends Controller {
      * function index().
      */
     public function index() {
-        $fetchTeam = Teams::with(['country'])->get()->map(function($item) {
-            return collect($item)->only(['id', 'name', 'slug', 'short_name', 'country_id', 'team_type', 'country'])->all();
+        $fetchSeries = Series::get()->map(function($item) {
+            return collect($item)->only(['id', 'name', 'series_start_date', 'series_end_date', 'slug', 'posted', 'status', 'meta_title', 'meta_description', 'meta_keywords'])->all();
         });
 
-        return view('Team::index', compact('fetchTeam'));
+        return view('Series::index', compact('fetchSeries'));
     }
 
     /**
@@ -32,51 +31,49 @@ class TeamController extends Controller {
      * @return Illuminate\View\View
      */
     public function add() {
-        $team = new Teams();
-        $countries = Country::pluck('name', 'id');
-        $title = __('Add New Team');
-        return view('Team::add', compact('countries', 'team', 'title'));
+        $series = new Series();
+        $title = __('Add New Series');
+        return view('Series::add', compact('series', 'title'));
     }
 
     /**
      * function edit().
      *
-     * @description: edit existing Team.
+     * @description: edit existing Series.
      * @return Illuminate\View\View
      */
     public function edit($slug) {
 
-        $team = Teams::whereSlug($slug)->first();
-        $countries = Country::pluck('name', 'id');
-        if (!$team) {
+        $series = Series::whereSlug($slug)->first();
+        if (!$series) {
             return abort(404);
         }
-        $title = __('Edit Team: ' . $team->name);
-        return view('Team::add', compact('countries', 'team', 'title'));
+        $title = __('Edit Series: ' . $series->name);
+        return view('Series::add', compact('series', 'title'));
     }
  
     /**
      * function save().
      *
-     * @description: Save existing or new Team.
+     * @description: Save existing or new Series.
      * @return Illuminate\View\View;
      */
-    public function save(TeamValidator $request) {
+    public function save(SeriesValidator $request) {
         try {
             DB::beginTransaction();
             if ($slug = $request->route('slug')) {
-                $team = Teams::whereSlug($slug)->first();
-                $slug = $team->slug = createSlug($request->get('name'));
-                $team->fill(array_map('trim', $request->except(['slug'])));
+                $series = Series::whereSlug($slug)->first();
+                $slug = $series->slug = createSlug($request->get('name'));
+                $series->fill(array_map('trim', $request->except(['slug'])));
             } else {
                 $insertValues = array_map('trim', $request->except(['slug']));
                 $insertValues['slug'] = createSlug($insertValues['name']);
 
-                $team = new Teams($insertValues);
+                $series = new Series($insertValues);
             }
-            if ($team->save()) {
+            if ($series->save()) {
                 DB::commit();
-                return ($slug) ? redirect()->to(route('editTeam', ['slug' => $slug]))->with(['success' => __('Saved successfully')]) :
+                return ($slug) ? redirect()->to(route('editSeries', ['slug' => $slug]))->with(['success' => __('Saved successfully')]) :
                     redirect()->back()->with(['success' => __('Saved successfully')]);
             }
         } catch (\Exception $ex) {
@@ -96,11 +93,11 @@ class TeamController extends Controller {
     public function delete($slug) {
         try {
             DB::beginTransaction();
-            $team = Teams::whereSlug($slug)->first();
-            if (!$team) {
-                return redirect()->back()->withErrors(['message' => __('Team does not exist on our records')]);
+            $series = Series::whereSlug($slug)->first();
+            if (!$series) {
+                return redirect()->back()->withErrors(['message' => __('Series does not exist on our records')]);
             }
-            if ($team->delete()) {
+            if ($series->delete()) {
                 DB::commit();
                 return redirect()->back()->with(['success' => __('Deleted successfully')]);
             }

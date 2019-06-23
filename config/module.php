@@ -8,5 +8,6 @@ return [
         'Dashboard',
         'Country',
         'Team',
+        'Series',
     ]
 ];

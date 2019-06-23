@@ -68,6 +68,7 @@ class CountryController extends Controller {
             DB::beginTransaction();
             if ($slug = $request->route('slug')) {
                 $country = Country::whereSlug($slug)->first();
+                $slug = $country->slug = createSlug($request->get('name'));
                 $country->fill(array_map('trim', $request->except(['slug'])));
             } else {
                 $insertValues = array_map('trim', $request->except(['slug']));
@@ -76,7 +77,8 @@ class CountryController extends Controller {
             }
             if ($country->save()) {
                 DB::commit();
-                return redirect()->back()->with(['success' => __('Saved successfully')]);
+                return ($slug) ? redirect()->to(route('editCountry', ['slug' => $slug]))->with(['success' => __('Saved successfully')]) :
+                    redirect()->back()->with(['success' => __('Saved successfully')]);
             }
         } catch (\Exception $ex) {
             DB::rollBack();
