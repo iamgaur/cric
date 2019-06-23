@@ -1,8 +1,5 @@
 @extends('Theme::layouts.baseLayout')
     @section('content')
-    @php 
-    route('postAddCountry') 
-    @endphp
         <div class="content">
             <div class="container-fluid">
                 <div class="row">

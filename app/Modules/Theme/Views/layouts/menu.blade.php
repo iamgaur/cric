@@ -24,13 +24,13 @@
 			<p>Series</p>
 		</a>
 	</li>
-	<li class="{{ ($currentRouteName == 'match') ? 'active' : ''}}">
-		<a href="#">
+	<li class="{{ ($currentRouteName == 'matches') ? 'active' : ''}}">
+		<a href="{{ route('matches') }}">
 			<p>Match</p>
 		</a>
 	</li>
-        <li class="{{ ($currentRouteName == 'matchteams') ? 'active' : ''}}">
-            <a href="#">
+        <li class="{{ ($currentRouteName == 'matchTeams') ? 'active' : ''}}">
+            <a href="{{ route('matchTeams') }}">
                 <p>Match -- Teams</p>
             </a>
         </li>

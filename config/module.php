@@ -9,5 +9,7 @@ return [
         'Country',
         'Team',
         'Series',
+        'Match',
+        'MatchTeams'
     ]
 ];

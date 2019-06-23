@@ -25,7 +25,7 @@ class SeriesValidator extends FormRequest
     {
         $slug = request()->route('slug');
         $name_rule = (!empty($slug)) ?
-                'required|unique_space_check:team,'. $slug. '|max:255' : 'required|unique_space_check:team|max:255';
+                'required|unique_space_check:series,'. $slug. '|max:255' : 'required|unique_space_check:series|max:255';
         return [
             'name' => $name_rule,
             'series_start_date' => 'required|date|date_format:Y-m-d|before:series_end_date',
