@@ -4,7 +4,7 @@ namespace App\Modules\Series\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Series\Models\Series;
-use App\Http\Requests\SeriesValidator;
+use App\Modules\Series\Validator\SeriesValidator;
 use DB;
 use Log;
 

@@ -5,7 +5,7 @@ namespace App\Modules\Country\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Modules\Country\Models\Country;
-use App\Http\Requests\CountryValidator;
+use App\Modules\Country\Validator\CountryValidator;
 use DB;
 use Log;
 use Auth;

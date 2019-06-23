@@ -5,7 +5,7 @@ namespace App\Modules\Team\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Team\Models\Teams;
 use App\Modules\Country\Models\Country;
-use App\Http\Requests\TeamValidator;
+use App\Modules\Team\Validator\TeamValidator;
 use DB;
 use Log;
 
