@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Modules\MatchTeams\Validator\MatchTeamValidator;
 use App\Modules\MatchTeams\Models\MatchTeams;
 use App\Modules\Team\Models\Teams;
+use App\Modules\MatchSquad\Models\MatchSquad;
 use DB;
 use Log;
 use Auth;
@@ -72,10 +73,28 @@ class MatchTeamsController extends Controller {
             DB::beginTransaction();
             if ($id = $request->route('id')) {
                 $matchTeams = MatchTeams::find($id);
+                $firstTeamName = Teams::whereId($matchTeams->first_team)->first()->name;
+                $secondTeamName = Teams::whereId($matchTeams->second_team)->first()->name;
+                $matchSquad = MatchSquad::whereSlug($firstTeamName . ' ' . $secondTeamName . ' ' . $matchTeams->match_id)->first();
+                if (!$matchSquad) {
+                    $matchSquad = new MatchSquad();
+                }
+                $firstTeamName = Teams::whereId($request->get('first_team'))->first()->name;
+                $secondTeamName = Teams::whereId($request->get('second_team'))->first()->name;
+                $matchSquad->first_team = $request->get('first_team');
+                $matchSquad->second_team = $request->get('second_team');
+                $matchSquad->match_id = $request->get('match_id');
+                $matchSquad->slug = createSlug($firstTeamName . ' ' . $secondTeamName . ' ' . $request->get('match_id'));
+                $matchSquad->save();
+
                 $matchTeams->fill(array_map('trim', $request->except(['slug'])));
             } else {
                 $insertValues = array_map('trim', $request->except(['slug']));
                 $matchTeams = new MatchTeams($insertValues);
+                $firstTeamName = Teams::whereId($request->get('first_team'))->first()->name;
+                $secondTeamName = Teams::whereId($request->get('second_team'))->first()->name;
+                $insertValues['slug'] = createSlug($firstTeamName . ' ' . $secondTeamName . ' ' . $request->get('match_id'));
+                MatchSquad::insert($insertValues);
             }
             if ($matchTeams->save()) {
                 DB::commit();
@@ -103,7 +122,11 @@ class MatchTeamsController extends Controller {
             if (!$matchTeams) {
                 return redirect()->back()->withErrors(['message' => __('MatchTeams does not exist on our records')]);
             }
+            $firstTeamName = Teams::whereId($matchTeams->first_team)->first()->name;
+            $secondTeamName = Teams::whereId($matchTeams->second_team)->first()->name;
+            $matchSquad = MatchSquad::whereSlug($firstTeamName . ' ' . $secondTeamName . ' ' . $matchTeams->match_id)->first();
             if ($matchTeams->delete()) {
+                $matchSquad->delete();
                 DB::commit();
                 return redirect()->back()->with(['success' => __('Deleted successfully')]);
             }

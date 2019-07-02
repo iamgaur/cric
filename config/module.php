@@ -11,6 +11,8 @@ return [
         'Series',
         'Match',
         'MatchTeams',
-        'News'
+        'MatchSquad',
+        'Player',
+        'News',
     ]
 ];

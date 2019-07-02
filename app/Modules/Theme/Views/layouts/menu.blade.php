@@ -34,13 +34,13 @@
                 <p>Match -- Teams</p>
             </a>
         </li>
-        <li class="{{ ($currentRouteName == 'matchsquad') ? 'active' : ''}}">
-            <a href="#">
+        <li class="{{ ($currentRouteName == 'matchSquads') ? 'active' : ''}}">
+            <a href="{{route('matchSquads')}}">
                 <p>Match -- Squad</p>
             </a>
         </li>
-	<li class="{{ ($currentRouteName == 'player') ? 'active' : ''}}">
-		<a href="#">
+	<li class="{{ ($currentRouteName == 'players') ? 'active' : ''}}">
+		<a href="{{ route('players') }}">
 			<p>Player</p>
 		</a>
 	</li>
@@ -55,7 +55,7 @@
 		</a>
 	</li>
 	<li class="{{ ($currentRouteName == 'logout') ? 'active' : ''}}">
-		<a href="#">
+		<a href="{{ route('logout') }}">
 			<p>Logout</p>
 		</a>
 	</li>
