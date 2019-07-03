@@ -12,6 +12,7 @@ return [
         'Match',
         'MatchTeams',
         'MatchSquad',
+        'Gallery',
         'Player',
         'News',
     ]

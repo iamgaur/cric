@@ -17,5 +17,11 @@ return [
     'series_status_value' => [
         '1' => 'current',
         '0' => 'past'
+    ],
+    'gallery_type' => [
+        'team' => 1,
+        'series' => 2,
+        'match' => 3,
+        'player' => 4,
     ]
 ];

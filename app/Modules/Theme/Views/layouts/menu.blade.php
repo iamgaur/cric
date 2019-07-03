@@ -50,7 +50,7 @@
 		</a>
 	</li>
 	<li class="{{ ($currentRouteName == 'gallery') ? 'active' : ''}}">
-		<a href="#">
+		<a href="{{ route('gallery') }}">
 			<p>Gallery</p>
 		</a>
 	</li>
