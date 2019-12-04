@@ -10,7 +10,7 @@
                                 <a class="linkClass" href="{{ route('countries') }}">Back to list</a>
                             </div>
                             <div class="content">
-                                <form method="post">
+                                <form method="post" enctype="multipart/form-data">
                                     @csrf
                                     <div class="row">
                                         <div class="col-md-12">
@@ -20,6 +20,34 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                              <input type="file" id="file1" class="form-control" value="{{ old('image', $country->image) }}" name="image" accept="image/*">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Alt Tag</label>
+                                                <input type="text" class="form-control" value="{{ old('alt_tag', $country->alt_tag) }}" placeholder="Image Alt Tag" name="alt_tag" id="country">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Image Title</label>
+                                                <input type="text" class="form-control" value="{{ old('image_title', $country->image_title) }}" placeholder="Image Alt Tag" name="image_title" id="image_title">
+                                            </div>
+                                        </div>
+                                    </div>
+
+
                                     <div class="row">
                                         <div class="col-md-12">
                                             <div class="form-group">

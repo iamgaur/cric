@@ -1,4 +1,12 @@
 @extends('Theme::layouts.baseLayout')
+<style>
+
+.modal-backdrop.in {
+  display: none !important;
+}
+</style>
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.4/summernote.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/css/select2.min.css" rel="stylesheet" />
     @section('content')
         <div class="content">
             <div class="container-fluid">
@@ -17,6 +25,19 @@
                                             <div class="form-group">
                                                 <label>Name</label>
                                                 <input type="text" class="form-control" placeholder="Series name"  value="{{ old('name', $series->name) }}" name="name" id="series_name">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Gender</label>
+                                                <select class="form-control" name="gender"> 
+                                                    <option value="">Select Gender</option>
+                                                    @foreach(config('constants.series_gender_type') as $key => $value)
+                                                        <option {{ old('gender', $series->gender) == $key ? 'selected' : null }} value="{{ $key }}">{{ ucwords($value) }}</option>
+                                                    @endforeach
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
@@ -71,6 +92,27 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Format Type</label>
+                                                <select class="form-control" multiple="multiple" name="format_type[]" id="format_type">
+                                                  @foreach ($formatType as $key => $value)
+                                                    <option {{ in_array($key, old('format_type', explode(',', $series->format_type))) ? 'selected' : null }} value="{{ $key }}">{{ $value }}</option>
+                                                  @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>About Series</label>
+                                                <textarea id="editor" name="about_series_html">{{ old('about_series_html', $series->about_series_html) }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <input type="submit" class="btn btn-info btn-fill pull-right" />
                                     <div class="clearfix"></div>
                                 </form>
@@ -82,25 +124,22 @@
         </div>
     @endsection
     @push('scripts')
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.4/summernote.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js"></script>
         <script>
             $(function() {
                 $('#start_date').datetimepicker({
                     format: 'YYYY-MM-DD'
                 });
-                $("#start_date").on("dp.change", function(e) {
-                    var dt = new Date(e.date);
-                    dt.setDate(dt.getDate() + 1);
-                    $("#end_date").data("DateTimePicker").minDate(dt);
-                });
-                $("#end_date").on("dp.change", function(e) {
-                    var dt = new Date(e.date);
-                    
-                    dt.setDate(dt.getDate() - 1);
-                    $("#start_date").data("DateTimePicker").maxDate(dt);
-                });
+
                 $('#end_date').datetimepicker({
                     format: 'YYYY-MM-DD'
                 });
+
+                $('#editor').summernote({
+                  height: 500,
+                });
+                $('#format_type').select2();
             });
         </script>
     @endpush

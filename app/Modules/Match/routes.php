@@ -10,4 +10,6 @@ Route::group(['middleware' => ['web', 'auth'], 'namespace' => 'App\Modules\Match
     Route::get('edit/match/{slug}', ['uses' => 'MatchController@edit', 'as' => 'editMatch']);
     Route::post('edit/match/{slug}', ['uses' => 'MatchController@save', 'as' => 'postEditMatch']);
     Route::get('delete/match/{slug}', ['uses' => 'MatchController@delete', 'as' => 'deleteMatch']);
+    Route::get('matchGroupFields', ['uses' => 'MatchController@groupFields', 'as' => 'matchGroupFields']);
+    Route::post('matchAddGroupFields', ['uses' => 'MatchController@addGroupFields', 'as' => 'matchAddGroupFields']);
 });

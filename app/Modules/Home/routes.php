@@ -6,5 +6,5 @@
  * and open the template in the editor.
  */
 Route::group(['middleware' => 'web', 'namespace' => 'App\Modules\Home\Controllers'], function() {
-    Route::get('/', ['as' => 'home', 'uses' => 'HomeController@index']);
+   // Route::get('/', ['as' => 'home', 'uses' => 'HomeController@index']);
 });

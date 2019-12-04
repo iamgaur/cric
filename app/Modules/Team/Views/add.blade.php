@@ -10,7 +10,7 @@
                             <a class="linkClass" href=" {{ route('teams') }}">Back to list</a>
                         </div>
                         <div class="content">
-                            <form method="post">
+                            <form method="post" enctype="multipart/form-data">
                                 @csrf
                                 <div class="row">
                                     <div class="col-md-12">
@@ -45,9 +45,10 @@
                                         <div class="form-group">
                                             <label>Type</label>
                                             <select class="form-control" name="team_type" id="team_type">
-                                                <option {{ old('team_type', $team->team_type) == 1 ? 'selected' : null }} value="1">{{ config('constants.team_type.1') }}</option>
-                                                <option {{ old('team_type', $team->team_type) == 2 ? 'selected' : null }} value="2">{{ config('constants.team_type.2') }}</option>
-                                                <option {{ old('team_type', $team->team_type) == 3 ? 'selected' : null }} value="3">{{ config('constants.team_type.3') }}</option>
+                                              @foreach($teamType as $type_id => $type_value)
+                                              <option {{ old('country_id', $team->team_type) == $type_id ? 'selected' : null }} value="{{ $type_id }}">{{ $type_value }}</option>
+                                              @endforeach
+
                                             </select>
                                         </div>
                                     </div>
@@ -76,6 +77,33 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                          <input type="file" id="file1" class="form-control" value="{{ old('image', $team->image) }}" name="image" accept="image/*">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label>Alt Tag</label>
+                                            <input type="text" class="form-control" value="{{ old('alt_tag', $team->alt_tag) }}" placeholder="Image Alt Tag" name="alt_tag" id="alt_tag">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label>Image Title</label>
+                                            <input type="text" class="form-control" value="{{ old('image_title', $team->image_title) }}" placeholder="Image Alt Tag" name="image_title" id="image_title">
+                                        </div>
+                                    </div>
+                                </div>
+
+
                                 <input type="submit" class="btn btn-info btn-fill pull-right" />
                                 <div class="clearfix"></div>
                             </form>

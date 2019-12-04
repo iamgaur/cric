@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Modules\Player\Models\Player;
 use App\Modules\Player\Models\PlayerTeams;
+use App\Modules\Player\Models\GroupField;
 use App\Modules\Team\Models\Teams;
 use DB;
 use Log;
@@ -42,8 +43,10 @@ class PlayerController extends Controller {
         $playerTeams = array();
         $team_type = array_flip(config('constants.team_type'));
         $nationalTeamList = Teams::whereTeamType($team_type['National'])->get(['name', 'id', 'team_type']);
-        $clubTeamList = Teams::whereTeamType($team_type['IPL'])->get(['name', 'id', 'team_type']);
-        return view('Player::add', compact('playerTeams', 'clubTeamList', 'nationalTeamList', 'player', 'title'));
+        $clubTeamList = Teams::where('team_type', '<>', $team_type['National'])->get(['name', 'id', 'team_type']);
+        $group_fields = $this->map_group_fields();
+
+        return view('Player::add', compact('playerTeams', 'clubTeamList', 'nationalTeamList', 'player', 'title', 'group_fields'));
     }
 
     /**
@@ -57,7 +60,7 @@ class PlayerController extends Controller {
         $player = Player::wherePSlug($p_slug)->whereCSlug($c_slug)->first();
         $team_type = array_flip(config('constants.team_type'));
         $nationalTeamList = Teams::whereTeamType($team_type['National'])->get(['name', 'id', 'team_type']);
-        $clubTeamList = Teams::whereTeamType($team_type['IPL'])->get(['name', 'id', 'team_type']);
+        $clubTeamList = Teams::where('team_type', '<>', $team_type['National'])->get(['name', 'id', 'team_type']);
         $playerTeams = array();
         if (PlayerTeams::wherePid($player->pid)->count()) {
             $playerTeams = PlayerTeams::wherePid($player->pid)->get()->toArray();
@@ -65,8 +68,10 @@ class PlayerController extends Controller {
         if (!$player) {
             return abort(404);
         }
+        $group_fields = $this->map_group_fields($player);
+
         $title = __('Edit Player: ' . $player->name);
-        return view('Player::add', compact('playerTeams', 'clubTeamList', 'nationalTeamList','player', 'title'));
+        return view('Player::add', compact('playerTeams', 'clubTeamList', 'nationalTeamList','player', 'title', 'group_fields'));
     }
 
     /**
@@ -90,7 +95,7 @@ class PlayerController extends Controller {
                         throw new \Exception($response['error']);
                     $player->c_slug = $response['slug'];
                 }
-                $player->fill(array_map('trim', $request->except(['team_country', 'p_slug', 'c_slug'])));
+                $player->fill(array_map('trim', $request->except(['team_country', 'p_slug', 'c_slug', 'group'])));
                 PlayerTeams::wherePid($player->pid)->delete();
                 $team_country =  $request->get('team_country');
             } else {
@@ -98,7 +103,7 @@ class PlayerController extends Controller {
                 if (!$validator['success']) {
                     return redirect()->back()->withInput()->withErrors(['message' => __($validator['error'])]);
                 }
-                $insertValues = array_map('trim', $request->except(['team_country', 'p_slug', 'c_slug']));
+                $insertValues = array_map('trim', $request->except(['team_country', 'p_slug', 'c_slug', 'group']));
                 $insertValues['p_slug'] = createSlug($insertValues['player_name']);
                 $team_country =  $request->get('team_country');
                 $team = Teams::find($team_country['team'][0]['team_id']);
@@ -106,11 +111,17 @@ class PlayerController extends Controller {
 
                 $player = new Player($insertValues);
             }
+            $player->player_born = empty($player->player_born) ? null : $player->player_born;
+            $player->dynamic_group = json_encode($request->get('group'));
+            $player->player_bio = $this->postEditor($request);
             if ($player->save()) {
                 $teams = $team_country['team'];
                 $player_teams = array();
                 $j = 0;
                 foreach ($teams as $key => $teamCountry) {
+		    if (empty ($teamCountry['team_id'])) {
+                        continue;
+                    }
                     $player_teams[$j]['team_type'] =  ($key == 0) ? 1 : 2;
                     $player_teams[$j]['pid'] = $player->pid;
                     $player_teams[$j]['time_from'] = $teamCountry['start_date'];
@@ -125,7 +136,7 @@ class PlayerController extends Controller {
             }
         } catch (\Exception $ex) {
             DB::rollBack();
-            Log::error($ex->getMessage());
+            Log::error($ex->getMessage() . 'Line No' . $ex->getLine());
         }
 
         return redirect()->back()->withInput()->withErrors(['message' => __('Some error occured during saving')]);
@@ -213,10 +224,6 @@ class PlayerController extends Controller {
         try {
             $response = ['success' => false, 'erorr' => null, 'slug' => null];
             $team_country = $request->get('team_country');
-            if (isset($team_country['team'][1]) &&  empty($team_country['team'][1]['team_id']) ) {
-                $response['error'] = 'Club does not exist';
-                return $response;
-            }
             if (isset($team_country['team'][0]) && isset($team_country['team'][0]['team_id']) && !empty($team_country['team'][0]['team_id'])) {
                
                 $team = Teams::find($team_country['team'][0]['team_id']);
@@ -236,4 +243,143 @@ class PlayerController extends Controller {
         return $response;
     }
 
+    /**
+     * function groupFields()
+     */
+    public function groupFields() {
+       $title = 'Group Fields';
+       $json = GroupField::whereGroupType('player')->get();
+       $field_group = [];
+       if ($json->count()) {
+           foreach ($json->toArray() as $json_group) {
+               if ($json_group) {
+                    $field_group[] = json_decode($json_group['json_group'], 1);
+               }
+            }
+            $key_value = [];
+            $i = 0;
+            foreach($field_group as  $group) {
+                foreach ($group as $groupKey => $groupValue) {
+                    $key_value[$i]['heading'] = $groupKey;
+                    $key_value[$i]['fields'] = $groupValue;
+                    $i++;
+                }
+            }
+       }
+       $field_group = $key_value;
+       return view('Player::groupField', compact('field_group', 'title'));
+    }
+
+    /**
+     * function groupFields()
+     */
+    public function addGroupFields(Request $request) {
+        try {
+            $posts = $request->all();
+            $jsonField = [];
+            foreach($posts['groupField'] as $post) {
+                if (!isset($post['heading']) || !isset($post['fields'])) {
+                    continue;
+                }
+                foreach ($post['fields'] as $field) {
+                    $jsonField[$post['heading']][] = $field;
+                }
+            }
+            $groupField = new GroupField();
+            if (GroupField::whereGroupType('player')->count()) {
+                $groupField = GroupField::whereGroupType('player')->first();
+            }
+            $groupField->fill(['json_group' => json_encode($jsonField)]);
+            $groupField->save();
+        } catch (\Exception $ex) {
+            Log::error($ex->getMessage());
+        }
+        return redirect()->route('groupFields');
+    }
+
+    /**
+     * function map_group_fields().
+     *
+     * @param Object $player
+     * @return array
+     */
+    public function map_group_fields($player = null) {
+        $json = GroupField::whereGroupType('player')->first(['json_group'])->toArray();
+
+        $group_fields = [];
+        if (!empty($json['json_group'])) {
+            $global_fields = json_decode($json['json_group'], 1);
+ 
+            $dynamicGroup = null;
+            if (!empty($player)) {
+                $dynamicGroup = $player->dynamic_group;
+            }
+            
+            foreach($global_fields as $heading => $fields) {
+                $group_fields[$heading] = [
+                    'heading' => $heading,
+                    'fields' => []
+                ];
+                foreach ($fields as $field) {
+                    $group_fields[$heading]['fields'][$field] = '';
+                }
+            }
+
+            if (!empty($dynamicGroup) && !empty(json_decode($dynamicGroup, 1))) {
+ 
+                $dynamic = json_decode($dynamicGroup, 1);
+                foreach ($dynamic as $fields) {
+                    if (!isset($fields['heading']) || !isset($global_fields[$fields['heading']])) {
+                        continue;
+                    }
+                    $group_fields[$fields['heading']]['heading'] = $fields['heading'];
+
+                    foreach ($global_fields[$fields['heading']] as $field_title) {
+                        if (!array_key_exists($field_title, $fields['fields'])) {
+                            continue;
+                        }
+                        $group_fields[$fields['heading']]['fields'][$field_title] = $fields['fields'][$field_title];
+                    }
+                }
+            }
+        }
+
+        return $group_fields;
+    }
+    
+    /**
+    * function postSummernoteeditor().
+    */
+    public function postEditor($request) {
+
+        try {
+          $detail = $request->player_bio;
+          if (empty($detail)) {
+            return $detail;
+          }
+          $dom = new \DomDocument();
+          $dom->loadHtml($detail, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+          $images = $dom->getElementsByTagName('img');
+
+          foreach($images as $k => $img) {
+
+              $data = $img->getAttribute('src');
+              list($type, $data) = explode(';', $data);
+              list(, $data)      = explode(',', $data);
+              $data = base64_decode($data);
+              $image_name = time().$k.'.png';
+              $folder_path = "/images/players/";
+              $public_path = public_path($folder_path);
+              $path = $public_path . $image_name;
+              file_put_contents($path, $data);
+              $img->removeAttribute('src');
+              $img->setAttribute('src', $folder_path .  $image_name);
+          }
+          $detail = $dom->saveHTML();
+        } catch (\Exception $e) {
+          Log::info($e->getMessage());
+        }
+
+        return $detail;
+    }
 }

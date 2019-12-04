@@ -8,6 +8,6 @@ class Gallery extends Model {
     public $table = 'gallery';
     public $primaryKey = 'id';
 
-    protected $fillable = [ 'type', 'item_id', 'image'];
+    protected $fillable = [ 'type', 'item_id', 'image','gallery_title','embed_code','gallery_description'];
 
 }

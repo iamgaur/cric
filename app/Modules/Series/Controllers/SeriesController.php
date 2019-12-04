@@ -5,13 +5,14 @@ namespace App\Modules\Series\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Series\Models\Series;
 use App\Modules\Series\Validator\SeriesValidator;
+use App\Modules\Team\Models\TeamsType;
 use DB;
 use Log;
 
 class SeriesController extends Controller {
 
     public function __construct() {
-        
+
     }
 
     /**
@@ -33,7 +34,9 @@ class SeriesController extends Controller {
     public function add() {
         $series = new Series();
         $title = __('Add New Series');
-        return view('Series::add', compact('series', 'title'));
+
+        $formatType = config('constants.format_type');
+        return view('Series::add', compact('series', 'title', 'formatType'));
     }
 
     /**
@@ -48,10 +51,13 @@ class SeriesController extends Controller {
         if (!$series) {
             return abort(404);
         }
+
         $title = __('Edit Series: ' . $series->name);
-        return view('Series::add', compact('series', 'title'));
+        $formatType = config('constants.format_type');
+
+        return view('Series::add', compact('series', 'title', 'formatType'));
     }
- 
+
     /**
      * function save().
      *
@@ -64,13 +70,15 @@ class SeriesController extends Controller {
             if ($slug = $request->route('slug')) {
                 $series = Series::whereSlug($slug)->first();
                 $slug = $series->slug = createSlug($request->get('name'));
-                $series->fill(array_map('trim', $request->except(['slug'])));
+                $series->fill(array_map('trim', $request->except(['slug', 'format_type'])));
             } else {
-                $insertValues = array_map('trim', $request->except(['slug']));
+                $insertValues = array_map('trim', $request->except(['slug', 'format_type']));
                 $insertValues['slug'] = createSlug($insertValues['name']);
 
                 $series = new Series($insertValues);
             }
+            $series->about_series_html = $this->postEditor($request);
+            $series->format_type = !empty($request->get('format_type')) ? implode(',', $request->get('format_type')) : $request->get('format_type');
             if ($series->save()) {
                 DB::commit();
                 return ($slug) ? redirect()->to(route('editSeries', ['slug' => $slug]))->with(['success' => __('Saved successfully')]) :
@@ -107,5 +115,41 @@ class SeriesController extends Controller {
         }
 
         return redirect()->back()->withErrors(['message' => __('Some error occured during saving')]);
+    }
+
+    /**
+    * function postSummernoteeditor().
+    */
+    public function postEditor($request) {
+
+        try {
+          $detail = $request->about_series_html;
+          if (empty($detail)) {
+            return $detail;
+          }
+          $dom = new \DomDocument();
+          $dom->loadHtml($detail, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+          $images = $dom->getElementsByTagName('img');
+
+          foreach($images as $k => $img) {
+
+              $data = $img->getAttribute('src');
+              list($type, $data) = explode(';', $data);
+              list(, $data)      = explode(',', $data);
+              $data = base64_decode($data);
+              $image_name = time().$k.'.png';
+              $folder_path = "/images/series/";
+              $public_path = public_path($folder_path);
+              $path = $public_path . $image_name;
+              file_put_contents($path, $data);
+              $img->removeAttribute('src');
+              $img->setAttribute('src', $folder_path .  $image_name);
+          }
+          $detail = $dom->saveHTML();
+        } catch (\Exception $e) {
+          Log::info($e->getMessage());
+        }
+
+        return $detail;
     }
 }

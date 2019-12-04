@@ -6,7 +6,8 @@
                     <div class="col-md-12">
                         <div class="card">
                             <div class="header">
-                                <h4 class="title">Matches</h4><a class="linkClass" href="{{ route('addMatch') }}">Add new match</a>
+                                <h4 class="title">Matches</h4><a class="linkClass" href="{{ route('addMatch') }}">Add new match</a> | 
+                                <a class="linkClass" href="{{ route('matchGroupFields') }}">Add Global Field Group</a>
                             </div>
                             <div class="content table-responsive table-full-width">
                                 <table class="table table-hover table-striped">

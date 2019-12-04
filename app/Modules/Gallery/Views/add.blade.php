@@ -36,14 +36,41 @@
                                                     <option {{ old('item_id.'. $value, $gallery->item_id) == $id ? 'selected' : null }} value={{ $id }}>{{ $name }}</option>
                                                 @endforeach
                                             </select>
-                                        </div> 
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
-                            @php $image = ($gallery->image) ? asset('images/gallery/'. $gallery->image) : null; @endphp
-                            <img class="col-md-12 col-sm-12" src="{{ $image }}"  style="float:left;width:100%;height:100%;"/>
-                            
-                            <input type="file" id="file1" name="image" accept="image/*">
+
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>Gallery Title</label>
+                                        <input type="text" class="form-control" value="{{ old('alt_tag', $gallery->gallery_title) }}" placeholder="Gallery Title" name="gallery_title" id="gallery_title">
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>Embed Code</label>
+                                        <textarea rows="7" class="form-control" placeholder="Embed Code" name="embed_code" id="embed_code">{{ old('embed_code', $gallery->embed_code) }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>Gallery Description</label>
+                                        <textarea rows="7" class="form-control" placeholder="Gallery Description" name="gallery_description" id="gallery_description">{{ old('gallery_description', $gallery->gallery_description) }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+
                             <input type="submit" class="btn btn-info btn-fill pull-right" />
                             <div class="clearfix"></div>
                         </form>
@@ -62,6 +89,18 @@
             $('.item_id').addClass('hidden');
             $('#' + $(this).val()).removeClass('hidden');
         });
+    });
+
+    $(document).ready(function(){
+    	var i=1;
+    	$('#add').click(function(){
+    		 i++;
+    		 $('#dynamic_field').append('<tr id="row'+i+'" class="dynamic-added"><td><input type="file" name="image[]" placeholder="Please select image" class="custom-file-input" id="inputGroupFile02" /></td><td><button type="button" name="remove" id="'+i+'" class="btn btn-danger btn_remove">X</button></td></tr>');
+    	 });
+    	 $(document).on('click', '.btn_remove', function(){
+    		 var button_id = $(this).attr("id");
+    		 $('#row'+button_id+'').remove();
+    	 });
     });
 </script>
 @endpush

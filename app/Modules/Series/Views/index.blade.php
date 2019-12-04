@@ -25,6 +25,7 @@
                                                 <td>{{ date('Y-m-d', strtotime($value['series_start_date'])) }}</td>
                                                 <td>{{ date('Y-m-d', strtotime($value['series_end_date'])) }}</td>
                                                 <td><a href="{{ route('editSeries', ['slug' => $value['slug'] ]) }}">edit</a> |
+                                                  <a href="{{ route('pointTable', ['slug' => $value['slug'] ]) }}">Add Points</a> |
                                                      <a href="{{ route('deleteSeries', ['slug' => $value['slug']]) }}" onclick="if (!confirm('are you sure want to delete this series?')) return false;" >delete</a></td>
                                             </tr>
                                         @endforeach

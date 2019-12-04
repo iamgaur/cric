@@ -23,5 +23,24 @@ return [
         'series' => 2,
         'match' => 3,
         'player' => 4,
+    ],
+    'ranking_type' => [
+        'team' => 1,
+        'player' => 2,
+    ],
+    'gender' => [
+        1 => 'man',
+        2 => 'woman',
+    ],
+    'format_type' => [
+        1 => 'TEST',
+        2 => 'ODI',
+        3 => 'T20'
+    ],
+    'series_gender_type' => [
+        1 => 'international',
+        2 => 'domestic',
+        3 => 'T20 leagues',
+        4 => 'women'
     ]
 ];

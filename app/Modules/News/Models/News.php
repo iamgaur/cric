@@ -8,6 +8,6 @@ class News extends Model {
     public $table = 'news';
     public $primaryKey = 'id';
 
-    protected $fillable = ['title', 'description', 'tags', 'posted', 'slug', 'meta_title', 'meta_description', 'meta_keywords'];
+    protected $fillable = ['title', 'description', 'tags', 'posted', 'slug', 'meta_title', 'meta_description', 'meta_keywords','image','alt_tag','image_title'];
 
 }

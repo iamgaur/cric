@@ -8,6 +8,8 @@ class Series extends Model {
    public $table = 'series';
    public $primaryKey = 'id';
 
-   protected $fillable = ['name', 'series_start_date', 'series_end_date', 'slug', 'posted', 'status', 'meta_title', 'meta_description', 'meta_keywords'];
+   protected $fillable = ['name', 'series_start_date', 'series_end_date', 'slug',
+    'posted', 'status', 'meta_title', 'meta_description', 'meta_keywords', 'format_type',
+    'about_series_html', 'gender'];
 
 }

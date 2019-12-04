@@ -6,7 +6,9 @@
                 <div class="col-md-12">
                     <div class="card">
                         <div class="header">
-                            <h4 class="title">Players</h4><a class="linkClass" href="{{ route('addPlayer') }}">Add new player</a>
+                            <h4 class="title">Players</h4>
+                            <a class="linkClass" href="{{ route('addPlayer') }}">Add new player</a> | 
+                            <a class="linkClass" href="{{ route('groupFields') }}">Add Global Field Group</a>
                         </div>
                         <div class="content table-responsive table-full-width">
                             <table class="table table-hover table-striped">

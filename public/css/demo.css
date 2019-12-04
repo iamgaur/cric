@@ -68,3 +68,7 @@
 .linkClass {
     color:red;
 }
+
+.w-full {
+    width: 100%;
+}

@@ -1,4 +1,16 @@
 @extends('Theme::layouts.baseLayout')
+    <style>
+        .pl-0 {
+            padding-left: 0 !important;
+        }
+        .pr-0 {
+            padding-right: 0 !important;
+        }
+        .modal-backdrop.in {
+            display: none !important;
+        }
+    </style>
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.4/summernote.css" rel="stylesheet">
     @section('content')
     <div class="content">
         <div class="container-fluid">
@@ -85,7 +97,7 @@
                                                         <!-- Text input-->
                                                         <div class="form-group">
                                                             <div class="">
-                                                                <input value="{{ old('team_country.team.1.start_date', $club[$i]['time_from']) }}" name="team_country[team][{{ $i }}][start_date]" type="text" required placeholder="Start Date" class="form-control input-md pickerDate">
+                                                                <input value="{{ old('team_country.team.1.start_date', $club[$i]['time_from']) }}" name="team_country[team][{{ $i }}][start_date]" type="text" placeholder="Start Date" class="form-control input-md pickerDate">
                                                             </div>
                                                         </div>
                                                         <!-- Text input-->
@@ -168,7 +180,7 @@
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label>Bio</label>
-                                            <textarea rows="5"  name="player_bio" class="form-control" placeholder="Here can be your description" value="Mike">{{ old('player_bio', $player->player_bio) }}</textarea>
+                                            <textarea rows="5"  name="player_bio" class="form-control" placeholder="Here can be your description" value="Mike" id="editor">{{ old('player_bio', $player->player_bio) }}</textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -196,6 +208,25 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                @foreach($group_fields as $heading => $group) 
+                                    <div class="group-field">
+                                        <div class="heading">
+                                            <h3>{{ $heading }}</h3>
+                                            <input type="hidden" value="{{ $group['heading'] }}" name="group[{{ $group['heading'] }}][heading]">
+                                            <div class="sub-field">
+                                                @foreach($group['fields'] as $title => $field)
+                                                    <div style="margin-bottom: 45px;" class="sub-field-title">
+                                                        <label><strong>{{ $title }}</strong></label>
+                                                        <input class="col-md-12" type="text" value="{{ $field }}" name="group[{{ $group['heading'] }}][fields][{{ $title }}]">
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+
+                                
                                 <input type="submit" class="btn btn-info btn-fill pull-right" />
                                 <div class="clearfix"></div>
                             </form>
@@ -207,6 +238,7 @@
     </div>
     @endsection
     @push('scripts')
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.4/summernote.js"></script>
         <script type="text/javascript">  
             $(document).ready(function () {
                 $(document.body).on('click', '#add-more',function(e){
@@ -239,6 +271,9 @@
                 $('.pickerDate').datetimepicker({
                     format: 'YYYY-MM-DD'
                 }); 
+                $('#editor').summernote({
+                  height: 500,
+                });
             });
         </script>
     @endpush

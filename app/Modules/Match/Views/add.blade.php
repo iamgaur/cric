@@ -1,4 +1,11 @@
 @extends('Theme::layouts.baseLayout')
+<style>
+
+.modal-backdrop.in {
+  display: none !important;
+}
+</style>
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.4/summernote.css" rel="stylesheet">
     @section('content')
         <div class="content">
             <div class="container-fluid">
@@ -20,7 +27,7 @@
                                                     <option value="">Select Series</option>
                                                     @foreach ($fetchSeries as $series_id => $value)
                                                         <option {{ old('series_id', $match->series_id) == $series_id ? 'selected' : null }} value="{{ $series_id }}">{{ $value }}</option>
-                                                    @endforeach 
+                                                    @endforeach
                                                 </select>
                                             </div>
                                         </div>
@@ -44,8 +51,16 @@
                                     <div class="row">
                                         <div class="col-md-12">
                                             <div class="form-group">
-                                                <label>Date</label>
+                                                <label>Start Date</label>
                                                 <input type="text" class="form-control" placeholder="Match date" name="match_date" value="{{ old ('match_date', $match->match_date) }}" id="match_date">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>End Date</label>
+                                                <input type="text" class="form-control" placeholder="Match end date" name="match_end_date" value="{{ old ('match_end_date', $match->match__end_date) }}" id="match_end_date">
                                             </div>
                                         </div>
                                     </div>
@@ -105,6 +120,74 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>New match time</label>
+                                                <input type="text" class="form-control" placeholder="New match time" value="{{ old ('new_match_time', $match->new_match_time) }}" name="new_match_time" id="match_title">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Umpires</label>
+                                                <input type="text" class="form-control" placeholder="Umpires" value="{{ old ('umpires', $match->umpires) }}" name="umpires" id="umpires">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Third Umpire</label>
+                                                <input type="text" class="form-control" placeholder="Third Umpire" value="{{ old ('third_umpire', $match->third_umpire) }}" name="third_umpire" id="third_umpire">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Match Referee</label>
+                                                <input type="text" class="form-control" placeholder="Match Referee" value="{{ old ('match_referee', $match->match_referee) }}" name="match_referee" id="match_referee">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Toss</label>
+                                                <input type="text" class="form-control" placeholder="Toss" value="{{ old ('toss', $match->toss) }}" name="toss" id="toss">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>About Match</label>
+                                                <textarea id="editor" name="about_match_html">{{ old('about_match_html', $match->about_match_html) }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    @foreach($group_fields as $heading => $group) 
+                                        <div class="group-field">
+                                            <div class="heading">
+                                                <h3>{{ $heading }}</h3>
+                                                <input type="hidden" value="{{ $group['heading'] }}" name="group[{{ $group['heading'] }}][heading]">
+                                                <div class="sub-field">
+                                                    @foreach($group['fields'] as $title => $field)
+                                                        <div style="margin-bottom: 45px;" class="sub-field-title">
+                                                            <label><strong>{{ $title }}</strong></label>
+                                                            <input class="col-md-12" type="text" value="{{ $field }}" name="group[{{ $group['heading'] }}][fields][{{ $title }}]">
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+
                                     <input type="submit" class="btn btn-info btn-fill pull-right" />
                                     <div class="clearfix"></div>
                                 </form>
@@ -116,10 +199,14 @@
         </div>
     @endsection
     @push('scripts')
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.4/summernote.js"></script>
         <script>
             $(function() {
-                $('#match_date').datetimepicker({
+                $('#match_date, #match_end_date').datetimepicker({
                     format: 'YYYY-MM-DD'
+                });
+                $('#editor').summernote({
+                  height: 500,
                 });
             });
         </script>

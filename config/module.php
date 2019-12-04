@@ -9,11 +9,13 @@ return [
         'Country',
         'Team',
         'Series',
+        'SeriesSquad',
         'Match',
         'MatchTeams',
         'MatchSquad',
         'Gallery',
         'Player',
         'News',
+        'IccRanking'
     ]
 ];

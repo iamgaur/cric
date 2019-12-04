@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Modules\Country\Models\Country;
 use App\Modules\Country\Validator\CountryValidator;
+use Illuminate\Support\Facades\Input;
+use Validator;
 use DB;
 use Log;
 use Auth;
@@ -65,16 +67,30 @@ class CountryController extends Controller {
      */
     public function save(CountryValidator $request) {
         try {
+
             DB::beginTransaction();
             if ($slug = $request->route('slug')) {
                 $country = Country::whereSlug($slug)->first();
                 $slug = $country->slug = createSlug($request->get('name'));
                 $country->fill(array_map('trim', $request->except(['slug'])));
+                $image = Input::file('image');
+                if(!empty($image)){
+                  $country->image = $this->_upload_image();
+                  if (!empty($image) && !($country->image))
+                      return redirect()->back()->withInput()->withErrors(['message' => __('Some error occured during image upload')]);
+                }
             } else {
                 $insertValues = array_map('trim', $request->except(['slug']));
                 $insertValues['slug'] = createSlug($insertValues['name']);
+                if(isset($insertValues['image']) && !empty($insertValues['image']) ){
+                  $image = $this->_upload_image();
+                  if (isset($insertValues['image']) && !empty($insertValues['image']) && !($image))
+                      return redirect()->back()->withInput()->withErrors(['message' => __('Some error occured during image upload')]);
+                  $insertValues['image'] = $image;
+                }
                 $country = new Country($insertValues);
             }
+
             if ($country->save()) {
                 DB::commit();
                 return ($slug) ? redirect()->to(route('editCountry', ['slug' => $slug]))->with(['success' => __('Saved successfully')]) :
@@ -86,6 +102,34 @@ class CountryController extends Controller {
         }
 
         return redirect()->back()->withInput()->withErrors(['message' => __('Some error occured during saving')]);
+    }
+
+    /**
+     *
+     * @return boolean|string
+     */
+    public function _upload_image() {
+
+        $fileupdate = '';
+        $file = array('image' => Input::file('image'));
+        $rules = array('image' => 'mimes:jpeg,jpg,png,gif|max:2048'); //mimes:jpeg,bmp,png and for max size max:2048
+        $validator = Validator::make($file, $rules);
+        if ($validator->fails()) {
+            return false;
+
+        } else {
+            if (Input::file('image')->isValid()) {
+
+                $destinationPath = 'images/country';
+                $extension = Input::file('image')->getClientOriginalExtension();
+                $fileName = rand(11111, 99999) . '.' . $extension;
+                Input::file('image')->move(public_path($destinationPath), $fileName);
+                return $fileName;
+            } else {
+
+                return false;
+            }
+        }
     }
 
     /**

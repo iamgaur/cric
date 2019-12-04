@@ -5,13 +5,16 @@ namespace App\Modules\Gallery\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Modules\Gallery\Models\Gallery;
+use App\Modules\Gallery\Models\GalleryPhotos;
 use App\Modules\Gallery\Validator\GalleryValidator;
+use App\Modules\Gallery\Validator\GalleryPhotoValidator;
 use App\Modules\Team\Models\Teams;
 use App\Modules\Series\Models\Series;
 use App\Modules\Player\Models\Player;
 use App\Modules\Match\Models\Match;
 use Illuminate\Support\Facades\Input;
 use Validator;
+use App\Modules\Gallery\Models\AssociativeGallery;
 use DB;
 use Log;
 use Auth;
@@ -44,7 +47,7 @@ class GalleryController extends Controller {
                case 'series':
                    $item->type_name = Series::find($item->item_id)->name;
                    break;
-               
+
             }
 
             return $item;
@@ -65,6 +68,104 @@ class GalleryController extends Controller {
         $opted = @reset(config('constants.gallery_type'));
         return view('Gallery::add', compact('gallery', 'title', 'gallery_types', 'opted'));
     }
+
+
+    /**
+     * function getPhoto().
+     *
+     * @description: get Photo Gallery.
+     * @return Illuminate\View\View;
+     */
+    public function getPhoto($id = '') {
+      try{
+        if($id != ''){
+          $allGallery = Gallery::pluck('gallery_title', 'id');        
+          $gallery = GalleryPhotos::wheregId($id)->get();
+          $parentGallery = Gallery::whereId($id)->count();
+          if(count($gallery) && $parentGallery){
+            $parentGallery = Gallery::whereId($id)->first(['gallery_title', 'id'])->toArray();
+            if(count($parentGallery)) {
+              $title = $parentGallery['gallery_title'];
+              $gallery = $gallery->toArray();
+              $associativeGalleryPhotos = [];
+              if (AssociativeGallery::where(['associative_id' => $id])->count()) {
+                    $associativeGallery = AssociativeGallery::where(['associative_id' => $id])->get();
+                    foreach ($associativeGallery as $row) {
+                        if (GalleryPhotos::where(['g_id' => $row->g_id])->where(['id' => $row->photo_id])->count()) {
+                            $associativeGalleryPhotos[] = GalleryPhotos::where(['g_id' => $row->g_id])
+                                ->where(['id' => $row->photo_id])->first()->toArray();
+                       }
+                    }
+              }
+              return view('Gallery::getPhotos', compact('gallery','title', 'allGallery', 'associativeGalleryPhotos', 'parentGallery'));
+            }
+
+          }else {
+            return redirect()->back()->withErrors(['message' => __('There is no photos in gallery!!! first add it....')]);
+          }
+        }
+      } catch (\Exception $e) {
+        return redirect()->back()->withErrors(['message' => __('Some error occured....')]);
+      }
+      return redirect()->back()->withErrors(['message' => __('Some error occured.....')]);
+    }
+
+
+    /**
+     * function add().
+     *
+     * @description: Add a new Gallery.
+     * @return Illuminate\View\View;
+     */
+    public function addGalleryPhoto($id ='') {
+
+        if($id != '') {
+          $gallery = Gallery::pluck('gallery_title', 'id');
+          $galleryPhoto = GalleryPhotos::whereId($id)->first();
+          DB::table('gallery_images')->wheregId($galleryPhoto->g_id)->update(['profile_pic' => 0]);
+          DB::table('gallery_images')->wheregId($galleryPhoto->g_id)->whereId($id)->update(['profile_pic' => 1]);
+          return redirect()->back()->with(['success' => __('Saved successfully')]);
+        } else {
+          $gallery = Gallery::pluck('gallery_title', 'id');
+          $galleryPhoto = new GalleryPhotos();
+        }
+        if(count($gallery) == 0){
+          return redirect()->back()->withInput()->withErrors(['message' => __('Please first add gallery to add photos')]);
+        } else {
+          $gallery = $gallery->toArray();
+          return view('Gallery::addphoto', compact('gallery','galleryPhoto'));
+        }
+    }
+
+
+    public function addPhoto(GalleryPhotoValidator $request, $id = '') {
+      try{
+        $inputValues = $request->all();
+        $files = $request->file('image');
+        if(isset($inputValues['image']) && !empty($inputValues['image'])){
+          foreach ($inputValues['image'] as $key => $value) {
+            $dataArray = array();
+            $dataArray['g_id'] = $inputValues['g_id'];
+            $dataArray['alt_tag'] = isset($inputValues['alt_tag'][$key]) && !empty($inputValues['alt_tag'][$key]) ? $inputValues['alt_tag'][$key] : '';
+            $dataArray['image_title'] = isset($inputValues['image_title'][$key]) && !empty($inputValues['image_title'][$key]) ? $inputValues['image_title'][$key] : '';
+            $dataArray['image_description'] = isset($inputValues['image_description'][$key]) && !empty($inputValues['image_description'][$key]) ? $inputValues['image_description'][$key] : '';
+            
+            $dataArray['image'] = $this->_upload_image($files[$key]);
+            $dataArray['created_at'] = date('Y-m-d H:i:s');
+            $dataArray['updated_at'] = date('Y-m-d H:i:s');
+            GalleryPhotos::insert($dataArray);
+          }
+        } else {
+          return redirect()->back()->withInput()->withErrors(['message' => __('Some error occured during image upload')]);
+        }
+      } catch (\Exception $e) {
+        return redirect()->back()->withInput()->withErrors(['message' => __('Some error occured during image upload')]);
+      }
+      return redirect()->back()->with(['success' => __('Saved successfully')]);
+    }
+
+
+
 
     /**
      * function edit().
@@ -92,28 +193,21 @@ class GalleryController extends Controller {
     public function save(GalleryValidator $request) {
         try {
             $inputValues = $request->all();
-
             DB::beginTransaction();
 
             if(!$this->validateItemId($request))
                 return redirect()->back()->withInput()->withErrors(['message' => __('Item id does not have a value')]);
 
-            $image = $this->_upload_image();
-            if (isset($inputValues['image']) && !empty($inputValues['image']) && !($image))
-                return redirect()->back()->withInput()->withErrors(['message' => __('Some error occured during image upload')]);
-  
             if ($id = $request->route('id')) {
                 $gallery = Gallery::find($id);
                 $insertValues = $request->except('item_id');
                 $insertValues['item_id'] =  $request->get('item_id')[$request->get('type')];
-                if (!empty($image))
-                    $insertValues['image'] = $image;
                 $gallery->fill(array_map('trim', $insertValues));
             } else {
-                
+
                 $insertValues = $request->except('item_id');
                 $insertValues['item_id'] =  $request->get('item_id')[$request->get('type')];
-                $insertValues['image'] = $image;
+
                 $count = Gallery::whereType($insertValues['type'])->whereItemId($insertValues['item_id'])->count();
                 if ($count)
                     return redirect()->back()->withInput()->withErrors(['message' => __('Data Already Exist')]);
@@ -156,8 +250,8 @@ class GalleryController extends Controller {
 
         return redirect()->back()->withErrors(['message' => __('Some error occured during saving')]);
     }
-    
-    
+
+
     /**
      * function getAllGalleryTypes()
      */
@@ -168,35 +262,29 @@ class GalleryController extends Controller {
         $options['player'] = Player::pluck('player_name', 'pid');
         return $options;
     }
-    
+
     /**
-     * 
+     *
      * @return boolean|string
-     */ 
-    public function _upload_image() {
-        $fileupdate = '';
-        $file = array('image' => Input::file('image'));
-        $rules = array('image' => 'mimes:jpeg,jpg,png,gif|max:2048'); //mimes:jpeg,bmp,png and for max size max:2048
-        $validator = Validator::make($file, $rules);
-        if ($validator->fails()) {
-
+     */
+    public function _upload_image($file) {
+        $rules = array('image' => 'mimes:jpeg,jpg,png,gif|max:2048');
+        if (0 && $validator->fails()) {
             return false;
-
         } else {
-            if (Input::file('image')->isValid()) {
-                $destinationPath = 'images/gallery';
-                $extension = Input::file('image')->getClientOriginalExtension();
-                $fileName = rand(11111, 99999) . '.' . $extension;
-                Input::file('image')->move(public_path($destinationPath), $fileName);
+            if (1 || $file->isValid()) {
 
+                $destinationPath = 'images/gallery';
+                $extension = $file->getClientOriginalExtension();
+                $fileName = rand(11111, 99999) . '.' . $extension;
+                $file->move(public_path($destinationPath), $fileName);
                 return $fileName;
             } else {
-
                 return false;
             }
         }
     }
- 
+
     /**
      * function validateItemId().
      *
@@ -219,4 +307,68 @@ class GalleryController extends Controller {
         return false;
     }
 
+    /**
+     * function associatePhoto().
+     */
+    public function asssociatePhoto(Request $request) {
+        try {
+            $rules = [
+                'g_id' => 'required',
+                'photo_id' => 'required',
+                'associative_id' => 'required'
+            ];
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator);
+            }
+            $associationExist = AssociativeGallery::where($request->except(['_token']))->count();
+            if ($associationExist) {
+                return redirect()->back()->withErrors(['message' => __('Association already Exist')]);
+            }
+            DB::beginTransaction();
+            $associativeGallery = new AssociativeGallery();
+            $associativeGallery->fill($request->all());
+            if ($associativeGallery->save()) {
+                DB::commit();
+                return redirect()->route('getPhoto', ['id' => $request->get('g_id') ])->with(['success' => __('Data Saved Successfully')]);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
+        }
+        return redirect()->back()->withErrors(['message' => __('Opps! Something went wrong')]);
+    }
+    
+    /**
+     * function deAsssociatePhoto().
+     */
+    public function deAsssociatePhoto($associativeId, $photoId) {
+        try {
+            $request['photo_id'] = $photoId;
+            $request['associative_id'] = $associativeId;
+            $rules = [
+                'photo_id' => 'required',
+                'associative_id' => 'required'
+            ];
+
+            $validator = Validator::make($request, $rules);
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator);
+            }
+
+            $associationExist = AssociativeGallery::where($request)->count();
+
+            if (!$associationExist) {
+                return redirect()->back()->withErrors(['message' => __('Association not Exist')]);
+            }
+            DB::beginTransaction();
+            AssociativeGallery::where($request)->delete();
+            DB::commit();
+            return redirect()->route('getPhoto', ['id' => $request['associative_id'] ])->with(['success' => __('Data Deleted Successfully')]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
+        }
+        return redirect()->back()->withErrors(['message' => __('Opps! Something went wrong')]);
+    }
 }

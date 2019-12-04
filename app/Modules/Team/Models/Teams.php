@@ -9,7 +9,7 @@ class Teams extends Model {
    public $table = 'team';
    public $primaryKey = 'id';
 
-   protected $fillable = ['name', 'short_name', 'country_id', 'slug', 'team_type', 'meta_title', 'meta_description', 'meta_keywords'];
+   protected $fillable = ['name', 'short_name', 'country_id', 'slug', 'team_type', 'meta_title', 'meta_description', 'meta_keywords','image','alt_tag','image_title'];
 
    public function Country () {
        return $this->belongsTo(Country::class);
