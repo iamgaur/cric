@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Modules\Country\Models\Country;
+use App\Modules\News\Models\News;
+use App\Modules\Gallery\Models\Gallery;
+use App\Modules\MAtch\Models\Match;
 
 class HomeController extends Controller
 {
@@ -24,8 +26,29 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $country = Country::whereId(1)->get()->toArray();
-        
-        return view('frontend.index', ['data'=>$country]);
+        $news        = $this->getNewsLatest();
+        $latestPhoto = $this->getGalleryLatest();
+        return view('frontend.index', ['news'=> $news, 'latestPhoto' => $latestPhoto]);
+    }
+
+    // Home features image and Latest News data
+    protected function getNewsLatest()
+    {
+        $data = News::orderByDesc('id')->limit(11)->get();
+        return $data;
+    }
+
+    // Home Latest Photos
+    protected function getGalleryLatest()
+    {
+        $data = Gallery::orderByDesc('id')->limit(6)->get();
+        return $data;
+    }
+
+    // Home Upcomig Matches
+    protected function getUpcomingMatch()
+    {
+        $data = News::orderByDesc('id')->limit(6)->get();
+        return $data;
     }
 }

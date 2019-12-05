@@ -42,5 +42,6 @@ return [
         2 => 'domestic',
         3 => 'T20 leagues',
         4 => 'women'
-    ]
+    ],
+    'images' => '/images/',
 ];
