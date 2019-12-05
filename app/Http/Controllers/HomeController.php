@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Modules\News\Models\News;
 use App\Modules\Gallery\Models\Gallery;
-use App\Modules\MAtch\Models\Match;
+use App\Modules\Match\Models\Match;
 
 class HomeController extends Controller
 {
@@ -28,7 +28,9 @@ class HomeController extends Controller
     {
         $news        = $this->getNewsLatest();
         $latestPhoto = $this->getGalleryLatest();
-        return view('frontend.index', ['news'=> $news, 'latestPhoto' => $latestPhoto]);
+        $upcoming    = $this->getUpcomingMatch();
+       
+        return view('frontend.index', ['news'=> $news, 'latestPhoto' => $latestPhoto, 'upcoming'=>$upcoming]);
     }
 
     // Home features image and Latest News data
@@ -48,7 +50,7 @@ class HomeController extends Controller
     // Home Upcomig Matches
     protected function getUpcomingMatch()
     {
-        $data = News::orderByDesc('id')->limit(6)->get();
+        $data = Match::where('match_date','>', date('Y-m-d'))->orderby('match_date', 'ASC')->limit(4)->get();
         return $data;
     }
 }
